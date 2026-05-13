@@ -1,0 +1,54 @@
+rules_version = '2';
+
+service cloud.firestore {
+    match /databases/{database}/documents {
+        match /tennisForTwoScores/{scoreId} {
+            allow read: if true;
+            allow update, delete: if false;
+            allow create: if isValidScore();
+        }
+
+        match /{document=**} {
+            allow read, write: if false;
+        }
+
+        function isValidScore() {
+            return request.resource.data.keys().hasOnly([
+                'leftName',
+                'rightName',
+                'leftScore',
+                'rightScore',
+                'winner',
+                'createdAt'
+            ])
+            && request.resource.data.leftName is string
+            && request.resource.data.rightName is string
+            && request.resource.data.winner is string
+            && request.resource.data.leftName.size() >= 1
+            && request.resource.data.leftName.size() <= 18
+            && request.resource.data.rightName.size() >= 1
+            && request.resource.data.rightName.size() <= 18
+            && request.resource.data.leftScore is int
+            && request.resource.data.rightScore is int
+            && request.resource.data.leftScore >= 0
+            && request.resource.data.leftScore <= 99
+            && request.resource.data.rightScore >= 0
+            && request.resource.data.rightScore <= 99
+            && request.resource.data.createdAt == request.time
+            && isValidWinner();
+        }
+
+        function isValidWinner() {
+            return (
+                request.resource.data.leftScore == request.resource.data.rightScore
+                && request.resource.data.winner == 'Uavgjort'
+            ) || (
+                request.resource.data.leftScore > request.resource.data.rightScore
+                && request.resource.data.winner == request.resource.data.leftName
+            ) || (
+                request.resource.data.rightScore > request.resource.data.leftScore
+                && request.resource.data.winner == request.resource.data.rightName
+            );
+        }
+    }
+}
