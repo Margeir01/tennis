@@ -11,13 +11,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCTmDx5IzB1GeMA9w0GflJvTy2CRx0DaPw",
-    authDomain: "database-prosjekt-d7f33.firebaseapp.com",
-    projectId: "database-prosjekt-d7f33",
-    storageBucket: "database-prosjekt-d7f33.firebasestorage.app",
-    messagingSenderId: "211536762103",
-    appId: "1:211536762103:web:1da5eac3fbca85df50eff2",
-    measurementId: "G-37603ED50B"
+    apiKey: "AIzaSyCervUQ0fsx0rS4_gF1U9ekHzwuHAtC1h8",
+    authDomain: "tennis-a6ae6.firebaseapp.com",
+    projectId: "tennis-a6ae6",
+    storageBucket: "tennis-a6ae6.firebasestorage.app",
+    messagingSenderId: "967276803199",
+    appId: "1:967276803199:web:1f1f7783965c4b4d293b4a",
+    measurementId: "G-LH3HPD3MGZ"
 };
 
 const canvas = document.getElementById("gameCanvas");
