@@ -42,7 +42,6 @@ const keys = new Set();
 const court = {
     width: canvas.width,
     height: canvas.height,
-    gravity: 0.18,
     netHeight: 54
 };
 
@@ -98,7 +97,7 @@ function resetBall(direction = Math.random() > 0.5 ? 1 : -1) {
     ball.x = court.width / 2;
     ball.y = court.height / 2;
     ball.vx = direction * 6;
-    ball.vy = Math.random() > 0.5 ? -3.2 : 3.2;
+    ball.vy = Math.random() > 0.5 ? -4 : 4;
 }
 
 function resetGame() {
@@ -138,26 +137,26 @@ function paddleHit(paddle) {
 function bounceFromPaddle(paddle, direction) {
     const paddleCenter = paddle.y + paddle.height / 2;
     const hitPosition = (ball.y - paddleCenter) / (paddle.height / 2);
+    const verticalDirection = hitPosition === 0 ? (Math.random() > 0.5 ? 1 : -1) : Math.sign(hitPosition);
     ball.vx = direction * Math.min(Math.abs(ball.vx) + 0.35, 11);
-    ball.vy = hitPosition * 6;
+    ball.vy = verticalDirection * Math.max(Math.abs(hitPosition * 6), 3.2);
     ball.x = direction > 0 ? paddle.x + paddle.width + ball.radius : paddle.x - ball.radius;
 }
 
 function update() {
     movePaddles();
 
-    ball.vy += court.gravity;
     ball.x += ball.vx;
     ball.y += ball.vy;
 
     if (ball.y - ball.radius <= 0) {
         ball.y = ball.radius;
-        ball.vy *= -0.92;
+        ball.vy *= -1;
     }
 
     if (ball.y + ball.radius >= court.height) {
         ball.y = court.height - ball.radius;
-        ball.vy *= -0.92;
+        ball.vy *= -1;
     }
 
     if (paddleHit(leftPaddle) && ball.vx < 0) bounceFromPaddle(leftPaddle, 1);
