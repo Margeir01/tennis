@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Et Tennis for Two-inspirert JavaScript-spill med Firebase-lagring.">
+    <title>Tennis for Two | Margeir</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <a class="logo" href="../Stanley%20oppgave/index.html">Margeir Oddgeirsson</a>
+        <nav class="nav" aria-label="Hovedmeny">
+            <a href="../Stanley%20oppgave/index.html">Portefølje</a>
+            <a href="../Stanley%20oppgave/prosjekter.html">Prosjekter</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="game-layout" aria-label="Tennis for Two-spill">
+            <div class="game-copy">
+                <p class="eyebrow">JavaScript-spill</p>
+                <h1>Tennis for Two</h1>
+                <p class="lead">Hold ballen i spill med to linjer. Når ballen treffer veggen bak en spiller, får motstanderen poeng.</p>
+            </div>
+
+            <section class="scoreboard" aria-label="Poengtavle">
+                <div>
+                    <span id="leftNameLabel">Spiller 1</span>
+                    <strong id="leftScore">0</strong>
+                </div>
+                <div>
+                    <span id="rightNameLabel">Spiller 2</span>
+                    <strong id="rightScore">0</strong>
+                </div>
+            </section>
+
+            <canvas id="gameCanvas" width="960" height="540" aria-label="Spillområde"></canvas>
+
+            <section class="controls" aria-label="Spillkontroller">
+                <div class="player-inputs">
+                    <label>
+                        Spiller 1
+                        <input id="leftName" type="text" maxlength="18" value="Spiller 1">
+                    </label>
+                    <label>
+                        Spiller 2
+                        <input id="rightName" type="text" maxlength="18" value="Spiller 2">
+                    </label>
+                </div>
+
+                <div class="button-row">
+                    <button id="startBtn" class="button" type="button">Start</button>
+                    <button id="pauseBtn" class="button button-ghost" type="button">Pause</button>
+                    <button id="resetBtn" class="button button-ghost" type="button">Nullstill</button>
+                    <button id="saveBtn" class="button button-ghost" type="button">Lagre resultat</button>
+                </div>
+
+                <div class="help-grid" aria-label="Taster">
+                    <p><strong>Spiller 1:</strong> W og S</p>
+                    <p><strong>Spiller 2:</strong> Pil opp og pil ned</p>
+                </div>
+                <p id="statusMessage" class="status" role="status"></p>
+            </section>
+        </section>
+
+        <aside class="leaderboard" aria-label="Lagrede resultater">
+            <div class="section-heading">
+                <p class="eyebrow">Firebase</p>
+                <h2>Resultater</h2>
+            </div>
+            <ol id="leaderboardList" class="leaderboard-list"></ol>
+        </aside>
+    </main>
+
+    <footer class="site-footer">
+        <p>© 2026 Margeir Oddgeirsson · Tennis for Two</p>
+    </footer>
+
+    <script type="module" src="game.js"></script>
+</body>
+</html>
