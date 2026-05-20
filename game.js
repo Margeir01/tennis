@@ -483,6 +483,19 @@ window.addEventListener("resize", () => {
 
 window.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
+    const isTyping = ["input", "select", "textarea"].includes(event.target.tagName.toLowerCase());
+
+    if (key === " " && !isTyping) {
+        event.preventDefault();
+        if (!running && !gameOver) {
+            running = true;
+            lastTime = performance.now();
+            showStatus("Spillet kjører.");
+            requestAnimationFrame(gameLoop);
+        }
+        return;
+    }
+
     if (key === "escape") {
         event.preventDefault();
         togglePause();
