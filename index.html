@@ -73,6 +73,19 @@
                 </div>
                 <p id="statusMessage" class="status" role="status"></p>
             </section>
+
+            <section id="victoryScreen" class="victory-screen" aria-label="Seiersskjerm" hidden>
+                <canvas id="confettiCanvas" class="confetti-canvas" aria-hidden="true"></canvas>
+                <div class="victory-panel">
+                    <p class="eyebrow">Kamp ferdig</p>
+                    <h2 id="victoryTitle">Spiller vant!</h2>
+                    <p id="victoryScore" class="victory-score">0 - 0</p>
+                    <div class="victory-actions">
+                        <button id="playAgainBtn" class="button" type="button">Ny runde</button>
+                        <button id="saveVictoryBtn" class="button button-ghost" type="button">Lagre resultat</button>
+                    </div>
+                </div>
+            </section>
         </section>
 
         <aside class="leaderboard" aria-label="Lagrede resultater">

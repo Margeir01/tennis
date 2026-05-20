@@ -35,6 +35,13 @@ const saveBtn = document.getElementById("saveBtn");
 const winScore = document.getElementById("winScore");
 const statusMessage = document.getElementById("statusMessage");
 const leaderboardList = document.getElementById("leaderboardList");
+const victoryScreen = document.getElementById("victoryScreen");
+const victoryTitle = document.getElementById("victoryTitle");
+const victoryScore = document.getElementById("victoryScore");
+const confettiCanvas = document.getElementById("confettiCanvas");
+const confettiCtx = confettiCanvas.getContext("2d");
+const playAgainBtn = document.getElementById("playAgainBtn");
+const saveVictoryBtn = document.getElementById("saveVictoryBtn");
 
 const db = getFirestore(initializeApp(firebaseConfig));
 const localScoresKey = "tennisForTwoScores";
@@ -74,6 +81,8 @@ let gameOver = false;
 let lastTime = 0;
 let serveDelayUntil = 0;
 let scores = { left: 0, right: 0 };
+let confettiPieces = [];
+let confettiAnimation = null;
 
 function playerName(input, fallback) {
     return input.value.trim() || fallback;
@@ -99,6 +108,75 @@ function updateScoreboard() {
     updateLabels();
 }
 
+function resizeConfettiCanvas() {
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+}
+
+function createConfetti() {
+    const colors = ["#1f6f5b", "#f2cf63", "#b74433", "#3d5a80", "#fffdfa"];
+    confettiPieces = Array.from({ length: 140 }, () => ({
+        x: Math.random() * confettiCanvas.width,
+        y: -20 - Math.random() * confettiCanvas.height * 0.45,
+        size: 6 + Math.random() * 9,
+        speedY: 2.2 + Math.random() * 4.2,
+        speedX: -2.2 + Math.random() * 4.4,
+        rotation: Math.random() * Math.PI,
+        rotationSpeed: -0.12 + Math.random() * 0.24,
+        color: colors[Math.floor(Math.random() * colors.length)]
+    }));
+}
+
+function animateConfetti() {
+    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+    confettiPieces.forEach((piece) => {
+        piece.x += piece.speedX;
+        piece.y += piece.speedY;
+        piece.rotation += piece.rotationSpeed;
+
+        if (piece.y > confettiCanvas.height + 20) {
+            piece.y = -20;
+            piece.x = Math.random() * confettiCanvas.width;
+        }
+
+        confettiCtx.save();
+        confettiCtx.translate(piece.x, piece.y);
+        confettiCtx.rotate(piece.rotation);
+        confettiCtx.fillStyle = piece.color;
+        confettiCtx.fillRect(-piece.size / 2, -piece.size / 2, piece.size, piece.size * 0.58);
+        confettiCtx.restore();
+    });
+
+    confettiAnimation = requestAnimationFrame(animateConfetti);
+}
+
+function startConfetti() {
+    resizeConfettiCanvas();
+    createConfetti();
+    cancelAnimationFrame(confettiAnimation);
+    animateConfetti();
+}
+
+function stopConfetti() {
+    cancelAnimationFrame(confettiAnimation);
+    confettiAnimation = null;
+    confettiPieces = [];
+    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+}
+
+function showVictoryScreen(winner) {
+    victoryTitle.textContent = `${winner} vant!`;
+    victoryScore.textContent = `${playerName(leftName, "Spiller 1")} ${scores.left} - ${scores.right} ${playerName(rightName, "Spiller 2")}`;
+    victoryScreen.hidden = false;
+    startConfetti();
+}
+
+function hideVictoryScreen() {
+    victoryScreen.hidden = true;
+    stopConfetti();
+}
+
 function resetBall(direction = Math.random() > 0.5 ? 1 : -1, speed = 4.4) {
     ball.x = court.width / 2;
     ball.y = court.height / 2;
@@ -113,6 +191,7 @@ function prepareServe(direction) {
 }
 
 function resetGame() {
+    hideVictoryScreen();
     scores = { left: 0, right: 0 };
     leftPaddle.y = court.height / 2 - leftPaddle.height / 2;
     rightPaddle.y = court.height / 2 - rightPaddle.height / 2;
@@ -162,6 +241,7 @@ function finishGame(winner) {
     gameOver = true;
     serveDelayUntil = 0;
     showStatus(`${winner} vant! Trykk Nullstill for ny runde.`);
+    showVictoryScreen(winner);
 }
 
 function handlePoint(side) {
@@ -365,8 +445,13 @@ pauseBtn.addEventListener("click", togglePause);
 
 resetBtn.addEventListener("click", resetGame);
 saveBtn.addEventListener("click", saveScore);
+playAgainBtn.addEventListener("click", resetGame);
+saveVictoryBtn.addEventListener("click", saveScore);
 leftName.addEventListener("input", updateLabels);
 rightName.addEventListener("input", updateLabels);
+window.addEventListener("resize", () => {
+    if (!victoryScreen.hidden) resizeConfettiCanvas();
+});
 
 window.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
