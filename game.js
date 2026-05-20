@@ -407,7 +407,7 @@ async function loadScores() {
 async function saveScore() {
     if (scoreSaved) {
         showStatus("Resultatet er allerede lagret.");
-        if (!victoryScreen.hidden) showVictorySaveStatus("Resultatet er allerede lagret i Firebase.");
+        if (!victoryScreen.hidden) showVictorySaveStatus("Resultatet er allerede lagret.");
         return;
     }
 
@@ -429,8 +429,8 @@ async function saveScore() {
     try {
         await addDoc(collection(db, "tennisForTwoScores"), result);
         scoreSaved = true;
-        showStatus("Resultatet er lagret i Firebase.");
-        if (!victoryScreen.hidden) showVictorySaveStatus("Resultatet er lagret i Firebase.");
+        showStatus("Resultatet er lagret.");
+        if (!victoryScreen.hidden) showVictorySaveStatus("Resultatet er lagret.");
         await loadScores();
     } catch (error) {
         if (!localFallbackSaved) {
