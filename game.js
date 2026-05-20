@@ -81,6 +81,7 @@ let gameOver = false;
 let lastTime = 0;
 let serveDelayUntil = 0;
 let scores = { left: 0, right: 0 };
+let scoreSaved = false;
 let confettiPieces = [];
 let confettiAnimation = null;
 
@@ -199,6 +200,7 @@ function resetGame() {
     serveDelayUntil = 0;
     running = false;
     gameOver = false;
+    scoreSaved = false;
     updateScoreboard();
     draw();
     showStatus("Klart til start.");
@@ -242,6 +244,7 @@ function finishGame(winner) {
     serveDelayUntil = 0;
     showStatus(`${winner} vant! Trykk Nullstill for ny runde.`);
     showVictoryScreen(winner);
+    saveScore();
 }
 
 function handlePoint(side) {
@@ -393,6 +396,11 @@ async function loadScores() {
 }
 
 async function saveScore() {
+    if (scoreSaved) {
+        showStatus("Resultatet er allerede lagret.");
+        return;
+    }
+
     updateLabels();
     const result = {
         leftName: playerName(leftName, "Spiller 1"),
@@ -409,10 +417,12 @@ async function saveScore() {
 
     try {
         await addDoc(collection(db, "tennisForTwoScores"), result);
+        scoreSaved = true;
         showStatus("Resultatet er lagret i Firebase.");
         await loadScores();
     } catch (error) {
         saveLocalScore({ ...result, createdAt: new Date().toISOString() });
+        scoreSaved = true;
         renderScores(getLocalScores());
         showStatus("Kunne ikke lagre i Firebase. Resultatet ble lagret lokalt.", true);
     }
