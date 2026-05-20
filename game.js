@@ -71,6 +71,7 @@ const ball = {
 
 let running = false;
 let lastTime = 0;
+let serveDelayUntil = 0;
 let scores = { left: 0, right: 0 };
 
 function playerName(input, fallback) {
@@ -93,11 +94,17 @@ function updateScoreboard() {
     updateLabels();
 }
 
-function resetBall(direction = Math.random() > 0.5 ? 1 : -1) {
+function resetBall(direction = Math.random() > 0.5 ? 1 : -1, speed = 4.4) {
     ball.x = court.width / 2;
     ball.y = court.height / 2;
-    ball.vx = direction * 6;
-    ball.vy = Math.random() > 0.5 ? -4 : 4;
+    ball.vx = direction * speed;
+    ball.vy = Math.random() > 0.5 ? -speed * 0.72 : speed * 0.72;
+}
+
+function prepareServe(direction) {
+    resetBall(direction, 4.2);
+    serveDelayUntil = performance.now() + 900;
+    showStatus("Poeng! Ny serve om et øyeblikk.");
 }
 
 function resetGame() {
@@ -105,6 +112,7 @@ function resetGame() {
     leftPaddle.y = court.height / 2 - leftPaddle.height / 2;
     rightPaddle.y = court.height / 2 - rightPaddle.height / 2;
     resetBall();
+    serveDelayUntil = 0;
     running = false;
     updateScoreboard();
     draw();
@@ -143,8 +151,10 @@ function bounceFromPaddle(paddle, direction) {
     ball.x = direction > 0 ? paddle.x + paddle.width + ball.radius : paddle.x - ball.radius;
 }
 
-function update() {
+function update(time) {
     movePaddles();
+
+    if (time < serveDelayUntil) return;
 
     ball.x += ball.vx;
     ball.y += ball.vy;
@@ -165,13 +175,13 @@ function update() {
     if (ball.x + ball.radius < 0) {
         scores.right += 1;
         updateScoreboard();
-        resetBall(1);
+        prepareServe(1);
     }
 
     if (ball.x - ball.radius > court.width) {
         scores.left += 1;
         updateScoreboard();
-        resetBall(-1);
+        prepareServe(-1);
     }
 }
 
@@ -221,7 +231,7 @@ function gameLoop(time) {
     lastTime = time;
 
     if (delta < 80) {
-        update();
+        update(time);
         draw();
     }
 
