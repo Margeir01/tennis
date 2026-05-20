@@ -349,10 +349,17 @@ select {
 }
 
 .victory-score {
-    margin-bottom: 24px;
+    margin-bottom: 10px;
     color: var(--accent-dark);
     font-size: 1.4rem;
     font-weight: 800;
+}
+
+.victory-save-status {
+    min-height: 24px;
+    margin-bottom: 24px;
+    color: var(--muted);
+    font-weight: 700;
 }
 
 .victory-actions {

@@ -38,6 +38,7 @@ const leaderboardList = document.getElementById("leaderboardList");
 const victoryScreen = document.getElementById("victoryScreen");
 const victoryTitle = document.getElementById("victoryTitle");
 const victoryScore = document.getElementById("victoryScore");
+const victorySaveStatus = document.getElementById("victorySaveStatus");
 const confettiCanvas = document.getElementById("confettiCanvas");
 const confettiCtx = confettiCanvas.getContext("2d");
 const playAgainBtn = document.getElementById("playAgainBtn");
@@ -82,6 +83,7 @@ let lastTime = 0;
 let serveDelayUntil = 0;
 let scores = { left: 0, right: 0 };
 let scoreSaved = false;
+let localFallbackSaved = false;
 let confettiPieces = [];
 let confettiAnimation = null;
 
@@ -92,6 +94,11 @@ function playerName(input, fallback) {
 function showStatus(message, isError = false) {
     statusMessage.textContent = message;
     statusMessage.style.color = isError ? "var(--danger)" : "var(--accent-dark)";
+}
+
+function showVictorySaveStatus(message, isError = false) {
+    victorySaveStatus.textContent = message;
+    victorySaveStatus.style.color = isError ? "var(--danger)" : "var(--accent-dark)";
 }
 
 function getWinScore() {
@@ -169,6 +176,7 @@ function stopConfetti() {
 function showVictoryScreen(winner) {
     victoryTitle.textContent = `${winner} vant!`;
     victoryScore.textContent = `${playerName(leftName, "Spiller 1")} ${scores.left} - ${scores.right} ${playerName(rightName, "Spiller 2")}`;
+    showVictorySaveStatus("Lagrer resultat...");
     victoryScreen.hidden = false;
     startConfetti();
 }
@@ -201,6 +209,7 @@ function resetGame() {
     running = false;
     gameOver = false;
     scoreSaved = false;
+    localFallbackSaved = false;
     updateScoreboard();
     draw();
     showStatus("Klart til start.");
@@ -398,9 +407,11 @@ async function loadScores() {
 async function saveScore() {
     if (scoreSaved) {
         showStatus("Resultatet er allerede lagret.");
+        if (!victoryScreen.hidden) showVictorySaveStatus("Resultatet er allerede lagret i Firebase.");
         return;
     }
 
+    if (!victoryScreen.hidden) showVictorySaveStatus("Lagrer resultat...");
     updateLabels();
     const result = {
         leftName: playerName(leftName, "Spiller 1"),
@@ -419,12 +430,19 @@ async function saveScore() {
         await addDoc(collection(db, "tennisForTwoScores"), result);
         scoreSaved = true;
         showStatus("Resultatet er lagret i Firebase.");
+        if (!victoryScreen.hidden) showVictorySaveStatus("Resultatet er lagret i Firebase.");
         await loadScores();
     } catch (error) {
-        saveLocalScore({ ...result, createdAt: new Date().toISOString() });
-        scoreSaved = true;
+        if (!localFallbackSaved) {
+            saveLocalScore({ ...result, createdAt: new Date().toISOString() });
+            localFallbackSaved = true;
+        }
         renderScores(getLocalScores());
-        showStatus("Kunne ikke lagre i Firebase. Resultatet ble lagret lokalt.", true);
+        const errorText = error.code || error.message || "ukjent feil";
+        showStatus(`Firebase-lagring feilet: ${errorText}`, true);
+        if (!victoryScreen.hidden) {
+            showVictorySaveStatus(`Ikke lagret i Firebase (${errorText}). Prøv Lagre resultat igjen.`, true);
+        }
     }
 }
 
