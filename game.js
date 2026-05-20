@@ -388,7 +388,7 @@ function renderScores(items) {
     });
 }
 
-async function loadScores() {
+async function loadScores(showLoadMessage = true) {
     try {
         const scoresQuery = query(
             collection(db, "tennisForTwoScores"),
@@ -397,10 +397,10 @@ async function loadScores() {
         );
         const snapshot = await getDocs(scoresQuery);
         renderScores(snapshot.docs.map((scoreDoc) => scoreDoc.data()));
-        showStatus("Resultater lastet fra Firebase.");
+        if (showLoadMessage) showStatus("Resultater lastet.");
     } catch (error) {
         renderScores(getLocalScores());
-        showStatus("Firebase kunne ikke lastes, så lokale resultater vises.", true);
+        if (showLoadMessage) showStatus("Resultater kunne ikke lastes, så lokale resultater vises.", true);
     }
 }
 
@@ -431,7 +431,8 @@ async function saveScore() {
         scoreSaved = true;
         showStatus("Resultatet er lagret.");
         if (!victoryScreen.hidden) showVictorySaveStatus("Resultatet er lagret.");
-        await loadScores();
+        await loadScores(false);
+        showStatus("Resultatet er lagret.");
     } catch (error) {
         if (!localFallbackSaved) {
             saveLocalScore({ ...result, createdAt: new Date().toISOString() });
@@ -439,9 +440,9 @@ async function saveScore() {
         }
         renderScores(getLocalScores());
         const errorText = error.code || error.message || "ukjent feil";
-        showStatus(`Firebase-lagring feilet: ${errorText}`, true);
+        showStatus(`Lagring feilet: ${errorText}`, true);
         if (!victoryScreen.hidden) {
-            showVictorySaveStatus(`Ikke lagret i Firebase (${errorText}). Prøv Lagre resultat igjen.`, true);
+            showVictorySaveStatus(`Ikke lagret (${errorText}). Prøv Lagre resultat igjen.`, true);
         }
     }
 }
