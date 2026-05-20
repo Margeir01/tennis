@@ -39,7 +39,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
     font: inherit;
 }
 
@@ -199,7 +200,8 @@ label {
     font-weight: 800;
 }
 
-input {
+input,
+select {
     width: 100%;
     min-height: 44px;
     border: 1px solid var(--line);
@@ -207,6 +209,11 @@ input {
     padding: 0 12px;
     color: var(--ink);
     background: #fffdfa;
+}
+
+.win-score-control {
+    max-width: 230px;
+    margin-top: 14px;
 }
 
 .button-row {

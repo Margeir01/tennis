@@ -32,6 +32,7 @@ const startBtn = document.getElementById("startBtn");
 const pauseBtn = document.getElementById("pauseBtn");
 const resetBtn = document.getElementById("resetBtn");
 const saveBtn = document.getElementById("saveBtn");
+const winScore = document.getElementById("winScore");
 const statusMessage = document.getElementById("statusMessage");
 const leaderboardList = document.getElementById("leaderboardList");
 
@@ -41,8 +42,7 @@ const keys = new Set();
 
 const court = {
     width: canvas.width,
-    height: canvas.height,
-    netHeight: 54
+    height: canvas.height
 };
 
 const leftPaddle = {
@@ -70,6 +70,7 @@ const ball = {
 };
 
 let running = false;
+let gameOver = false;
 let lastTime = 0;
 let serveDelayUntil = 0;
 let scores = { left: 0, right: 0 };
@@ -81,6 +82,10 @@ function playerName(input, fallback) {
 function showStatus(message, isError = false) {
     statusMessage.textContent = message;
     statusMessage.style.color = isError ? "var(--danger)" : "var(--accent-dark)";
+}
+
+function getWinScore() {
+    return parseInt(winScore.value, 10) || 5;
 }
 
 function updateLabels() {
@@ -114,6 +119,7 @@ function resetGame() {
     resetBall();
     serveDelayUntil = 0;
     running = false;
+    gameOver = false;
     updateScoreboard();
     draw();
     showStatus("Klart til start.");
@@ -151,6 +157,25 @@ function bounceFromPaddle(paddle, direction) {
     ball.x = direction > 0 ? paddle.x + paddle.width + ball.radius : paddle.x - ball.radius;
 }
 
+function finishGame(winner) {
+    running = false;
+    gameOver = true;
+    serveDelayUntil = 0;
+    showStatus(`${winner} vant! Trykk Nullstill for ny runde.`);
+}
+
+function handlePoint(side) {
+    scores[side] += 1;
+    updateScoreboard();
+
+    if (scores[side] >= getWinScore()) {
+        finishGame(side === "left" ? playerName(leftName, "Spiller 1") : playerName(rightName, "Spiller 2"));
+        return;
+    }
+
+    prepareServe(side === "left" ? -1 : 1);
+}
+
 function update(time) {
     movePaddles();
 
@@ -173,15 +198,23 @@ function update(time) {
     if (paddleHit(rightPaddle) && ball.vx > 0) bounceFromPaddle(rightPaddle, -1);
 
     if (ball.x + ball.radius < 0) {
-        scores.right += 1;
-        updateScoreboard();
-        prepareServe(1);
+        handlePoint("right");
     }
 
     if (ball.x - ball.radius > court.width) {
-        scores.left += 1;
-        updateScoreboard();
-        prepareServe(-1);
+        handlePoint("left");
+    }
+}
+
+function drawNet() {
+    const netX = court.width / 2;
+    const netWidth = 6;
+    const segmentHeight = 14;
+    const gap = 10;
+
+    ctx.fillStyle = "rgba(233, 223, 207, 0.78)";
+    for (let y = 14; y < court.height - 14; y += segmentHeight + gap) {
+        ctx.fillRect(netX - netWidth / 2, y, netWidth, Math.min(segmentHeight, court.height - 14 - y));
     }
 }
 
@@ -189,17 +222,7 @@ function drawCourt() {
     ctx.fillStyle = "#18382f";
     ctx.fillRect(0, 0, court.width, court.height);
 
-    ctx.strokeStyle = "rgba(233, 223, 207, 0.28)";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([10, 12]);
-    ctx.beginPath();
-    ctx.moveTo(court.width / 2, 0);
-    ctx.lineTo(court.width / 2, court.height);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.fillStyle = "#e9dfcf";
-    ctx.fillRect(court.width / 2 - 3, court.height - court.netHeight, 6, court.netHeight);
+    drawNet();
 
     ctx.strokeStyle = "rgba(233, 223, 207, 0.75)";
     ctx.lineWidth = 4;
@@ -316,17 +339,29 @@ async function saveScore() {
 }
 
 startBtn.addEventListener("click", () => {
-    if (running) return;
+    if (running || gameOver) return;
     running = true;
     lastTime = performance.now();
     showStatus("Spillet kjører.");
     requestAnimationFrame(gameLoop);
 });
 
-pauseBtn.addEventListener("click", () => {
-    running = false;
-    showStatus("Pause.");
-});
+function togglePause() {
+    if (gameOver) return;
+
+    if (running) {
+        running = false;
+        showStatus("Pause.");
+        return;
+    }
+
+    running = true;
+    lastTime = performance.now();
+    showStatus("Spillet kjører.");
+    requestAnimationFrame(gameLoop);
+}
+
+pauseBtn.addEventListener("click", togglePause);
 
 resetBtn.addEventListener("click", resetGame);
 saveBtn.addEventListener("click", saveScore);
@@ -335,6 +370,12 @@ rightName.addEventListener("input", updateLabels);
 
 window.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
+    if (key === "escape") {
+        event.preventDefault();
+        togglePause();
+        return;
+    }
+
     if (["w", "s", "arrowup", "arrowdown"].includes(key)) {
         event.preventDefault();
         keys.add(key);

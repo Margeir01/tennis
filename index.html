@@ -49,6 +49,16 @@
                     </label>
                 </div>
 
+                <label class="win-score-control">
+                    Poeng for å vinne
+                    <select id="winScore">
+                        <option value="3">3 poeng</option>
+                        <option value="5" selected>5 poeng</option>
+                        <option value="7">7 poeng</option>
+                        <option value="10">10 poeng</option>
+                    </select>
+                </label>
+
                 <div class="button-row">
                     <button id="startBtn" class="button" type="button">Start</button>
                     <button id="pauseBtn" class="button button-ghost" type="button">Pause</button>
@@ -59,6 +69,7 @@
                 <div class="help-grid" aria-label="Taster">
                     <p><strong>Spiller 1:</strong> W og S</p>
                     <p><strong>Spiller 2:</strong> Pil opp og pil ned</p>
+                    <p><strong>Pause:</strong> Esc</p>
                 </div>
                 <p id="statusMessage" class="status" role="status"></p>
             </section>
